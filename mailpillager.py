@@ -218,36 +218,29 @@ class MailPillager():
 
     def pillage(self, username, password, server, servertype, domain):
 
-        print "%s, %s, %s, %s" % (username, password, server, domain)
+        #print "%s, %s, %s, %s" % (username, password, server, domain)
 
         # decide on type of mail server
         mail = None
         port = 0
-        print servertype
         if servertype == "imaps":
             mail = IMAPS()
             port = 993
-            print "IMAP"
         elif servertype == "imap":
             mail = IMAP()
             port = 143
-            print "IMAP"
         elif servertype == "pop3s":
             mail = POP3S()
             port = 995
-            print "POP3"
         elif servertype == "pop3":
             mail = POP3()
             port = 110
-            print "POP3"
         elif servertype == "owa":
             mail = EWS()
             port = 443
-            print "EWS"
         elif servertype == "ews":
             mail = EWS()
             port = 443
-            print "EWS"
         else:
             print "ERROR, unknown server type provided"
             return

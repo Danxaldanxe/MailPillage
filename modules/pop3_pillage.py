@@ -160,13 +160,7 @@ class POP3(Pillager):
 
             file_path = os.path.join(self.config["outdir"], filename)
             print "Downloading attachment [%s] to [%s]" % (messageid, file_path)
-
-            # Check if its already there
-            if not os.path.isfile(file_path):
-                # finally write the stuff
-                fp = open(file_path, 'wb')
-                fp.write(part.get_payload(decode=True))
-                fp.close()
+            Utils.writeFile(part.get_payload(decode=True), file_path, "wb")
         return None
 
     def scrapeContacts(self):

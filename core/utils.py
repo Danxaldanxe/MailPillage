@@ -69,11 +69,11 @@ class Utils():
         return os.path.isfile(filename)
 
     @staticmethod
-    def writeFile(text, filename):
+    def writeFile(text, filename, flag="a"):
         fullfilename = os.path.abspath(filename+"_"+Utils.getRandStr(10))
         if not os.path.exists(os.path.dirname(fullfilename)):
             os.makedirs(os.path.dirname(fullfilename))
-        fp = open(fullfilename, "a")
+        fp = open(fullfilename, flag)
         fp.write(text)
         fp.close()
 
