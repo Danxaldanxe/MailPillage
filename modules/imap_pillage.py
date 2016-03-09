@@ -8,6 +8,7 @@ import ssl
 from threading import Thread
 
 from modules.pillager import Pillager
+from core.utils import Utils
 
 # -----------------------------------------------------------------------------
 # IMAP subclass of Pillager Class
@@ -150,12 +151,7 @@ class IMAP(Pillager):
             file_path = os.path.join(self.config["outdir"], filename)
 
             print "Downloading message id [%s] to [%s]" % (messageid, file_path)
-            # Check if its already there
-            if not os.path.isfile(file_path):
-                # finally write the stuff
-                fp = open(file_path, 'wb')
-                fp.write(email_body)
-                fp.close()
+            Utils.writeFile(email_body, file_path)
         return None
 
     def downloadAttachment(self, messageid=None):

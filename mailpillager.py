@@ -32,7 +32,7 @@ class MailPillager():
         self.config["searchstringfile"] = ""
         self.config["searchterms"] = list()
         self.config["server"] = ""
-        self.config["serverport"] = 0
+        self.config["servertype"] = ""
         self.config["domain"] = ""
         self.config["username"] = ""
         self.config["usernamefile"] = ""
@@ -105,12 +105,12 @@ class MailPillager():
                             default="",
                             action='store',
                             help="target mail server ip or fqdn")
-        parser.add_argument("--port",
-                            metavar="<port>",
-                            dest="serverport",
-                            default="993",
+        parser.add_argument("-t",
+                            metavar="<type of mail server>",
+                            dest="servertype",
+                            default="",
                             action='store',
-                            help="iport of target mail server")
+                            help="valid choices are: IMAP, IMAPS, POP3, POP3S, OWA, EWS")
         parser.add_argument("-d",
                             metavar="<domain>",
                             dest="domain",
@@ -152,7 +152,7 @@ class MailPillager():
         self.config["searchstringfile"] = args.searchstringfile
         self.config["searchstring"] = args.searchstring
         self.config["server"] = args.server
-        self.config["serverport"] = int(args.serverport)
+        self.config["servertype"] = args.servertype
         self.config["domain"] = args.domain
         self.config["username"] = args.username
         self.config["usernamefile"] = args.usernamefile
@@ -176,10 +176,11 @@ class MailPillager():
         else:
             self.display.error("Please enable at least one of the following parameters: --COMBINED or (-U and -P) or (-u and -p)")
             valid = False
-        if (self.config["server"] and self.config["serverport"]):
+        if (self.config["server"] and self.config["servertype"]):
+            self.config["servertype"] = self.config["servertype"].lower()
             pass
         else:
-            self.display.error("Please enable at both of: -s and --port")
+            self.display.error("Please enable at both of: -s and -t")
             valid = False
 
         if not valid:
@@ -215,32 +216,40 @@ class MailPillager():
         if (self.config['verbose'] > 1):
             self.display.enableDebug()
 
-    def pillage(self, username, password, server, port, domain):
+    def pillage(self, username, password, server, servertype, domain):
 
         print "%s, %s, %s, %s" % (username, password, server, domain)
 
         # decide on type of mail server
         mail = None
-        if (port == 993):
+        port = 0
+        print servertype
+        if servertype == "imaps":
             mail = IMAPS()
+            port = 993
             print "IMAP"
-        elif (port == 143):
+        elif servertype == "imap":
             mail = IMAP()
+            port = 143
             print "IMAP"
-        elif (port == 995):
+        elif servertype == "pop3s":
             mail = POP3S()
+            port = 995
             print "POP3"
-        elif (port == 110):
+        elif servertype == "pop3":
             mail = POP3()
+            port = 110
             print "POP3"
-        elif (port == 80):
+        elif servertype == "owa":
             mail = EWS()
+            port = 443
             print "EWS"
-        elif (port == 443):
+        elif servertype == "ews":
             mail = EWS()
+            port = 443
             print "EWS"
         else:
-            print "ERROR, unknown port provided"
+            print "ERROR, unknown server type provided"
             return
 
         # connect to mail server
@@ -249,12 +258,13 @@ class MailPillager():
         # validate username/password
         valid = False
         print "trying [%s]" % (username)
-        print "trying [%s@%s]" % (username, domain)
         if (mail.validate(username, password)):
             valid = True
-        elif (mail.validate(username + "@" + domain, password)):
-            valid = True
-            username = username + "@" + domain
+        if not valid and (domain is not ""):
+            print "trying [%s@%s]" % (username, domain)
+            if (mail.validate(username + "@" + domain, password)):
+                valid = True
+                username = username + "@" + domain
 
         # assuming the username/password worked
         if (valid):
@@ -276,7 +286,7 @@ class MailPillager():
 
         # if single username and password
         if (self.config["username"] and self.config["password"]):
-            mp.pillage(username=self.config["username"], password=self.config["password"], server=self.config["server"], port=int(self.config["serverport"]), domain=self.config["domain"])
+            mp.pillage(username=self.config["username"], password=self.config["password"], server=self.config["server"], servertype=self.config["servertype"], domain=self.config["domain"])
         # if seperate username and password files
         elif (Utils.isReadable(self.config["usernamefile"]) and Utils.isReadable(self.config["passwordfile"])):
             usernames = list()

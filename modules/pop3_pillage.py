@@ -8,6 +8,7 @@ import ssl
 from threading import Thread
 
 from modules.pillager import Pillager
+from core.utils import Utils
 
 # -----------------------------------------------------------------------------
 # POP3 subclass of Pillager Class
@@ -130,12 +131,7 @@ class POP3(Pillager):
             file_path = os.path.join(self.config["outdir"], filename)
 
             print "Downloading message id [%s] to [%s]" % (messageid, file_path)
-            # Check if its already there
-            if not os.path.isfile(file_path):
-                # finally write the stuff
-                fp = open(file_path, 'wb')
-                fp.write('\n'.join(body))
-                fp.close()
+            Utils.writeFile(email_body, file_path)
         return None
 
     def downloadAttachment(self, messageid=None):
